@@ -1,22 +1,20 @@
-name: Manually Deploy to Heroku
+name: Build Docker
 
-on: workflow_dispatch
-
+on:
+  push:
+   branches: [ master ]
+  pull_request:
+    branches: [ master ]
+      
 jobs:
-  deploy:
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-          docker_heroku_process_type: web
-          stack: "container"
-          region: "us"
-        env:
-          HD_CONFIG_FILE_URL: ${{secrets.CONFIG_FILE_URL}}
-          HD_HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
-          HD_HEROKU_APP_NAME: ${{secrets.HEROKU_APP_NAME}}
+    - uses: actions/checkout@v1
+    - name: Build & Push Image
+      run: |
+        echo "${{ secrets.DOCKERPW }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        docker image build -t "${{ secrets.DOCKER_HUB_USERNAME }}"/wzml:latest .
+        docker push "${{ secrets.DOCKER_HUB_USERNAME }}"/wzml:latest
